@@ -13,7 +13,7 @@ from scipy.signal import butter, lfilter, filtfilt
 
 host = "beaglebone.local"
 
-BUF_SIZE = 500
+BUF_SIZE = 5000
 class Plotter(object):
 
     """Docstring for Plotter. """
@@ -70,6 +70,7 @@ class Plotter(object):
         din = self.socket.recv_string()
         _, val = din.split()
         fval = float(val)
+        print fval
         self.xdata.append(fval)
         self.tstamp.append(self.tstamp[-1]+1)
         #print fval

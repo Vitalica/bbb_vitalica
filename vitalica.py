@@ -9,7 +9,7 @@ from ekg_sensor import EKG
 import random
 from math import sin,pi
 from sensor import Sensor
-#from bbb_vitalica import pulseox_sensor
+from pulseox_sensor import PulseOx
 
 class FakeData(Sensor):
 
@@ -39,19 +39,37 @@ def publish_data():
 
     """
     context = zmq.Context()
-    socket = context.socket(zmq.PUB)
-    socket.bind("tcp://*:8888")
+    socket = context.socket(zmq.REQ)
 
     #sensor_data = FakeData()
-    sensor_data = EKG()
 
+    ekg = EKG()
+    pulse = PulseOx()
+    #irtemp = IRTemp()
+    irtemp = FakeData()
+
+
+    data_out = []
     while True:
-        x = sensor_data.get_reading()
-        out = "data " + str(x)
-        #print '->', out
-        socket.send(out)
-        time.sleep(0.001)
-        #time.sleep(0.01)
+        socket.connect("tcp://localhost:5678")
+        data_ekg = ekg.get_reading()
+        data_pulse = pulse.get_reading()
+        data_temp = irtemp.get_reading()
+
+        data_out.append(data_ekg)
+        data_out.append(data_pulse[0])
+        data_out.append(data_pulse[1])
+        data_out.append(data_temp)
+
+        try:
+            #out = "data " + str(x)
+            socket.send("".join(out))
+            time.sleep(0.01)
+            out = map(str, data_out)
+            print '->', out
+            #time.sleep(0.01)
+        except:
+            pass
 
 if __name__ == '__main__':
     publish_data()
